@@ -22,46 +22,40 @@ const App = () => {
     const audio = new Audio();
     audio.preload = "auto";
 
-    // Add loading timeout
-    const loadingTimeout = setTimeout(() => {
-      if (!audioLoaded) {
-        setAudioLoadError(true);
-      }
-    }, 10000); // 10 second timeout
-
     const handleCanPlayThrough = () => {
       setAudioLoaded(true);
       audioRef.current = audio;
-      clearTimeout(loadingTimeout);
+      // Try to unlock audio on iOS/Safari
+      if (/iPhone|iPad|iPod|Safari/.test(navigator.userAgent)) {
+        audio
+          .play()
+          .then(() => {
+            audio.pause();
+            audio.currentTime = 0;
+          })
+          .catch(() => {});
+      }
     };
 
     const handleError = (error) => {
       console.error("Audio loading error:", error);
       setAudioLoadError(true);
-      clearTimeout(loadingTimeout);
     };
 
-    // Add loading state listener
-    const handleLoadStart = () => {
-      setAudioLoaded(false);
-      setAudioLoadError(false);
-    };
-
-    audio.addEventListener("loadstart", handleLoadStart);
     audio.addEventListener("canplaythrough", handleCanPlayThrough);
     audio.addEventListener("error", handleError);
 
-    // Set source after adding listeners
+    // Set source and load
     audio.src = "/taylor-swift-22-21.mp3";
     audio.load();
 
     return () => {
-      clearTimeout(loadingTimeout);
-      audio.removeEventListener("loadstart", handleLoadStart);
       audio.removeEventListener("canplaythrough", handleCanPlayThrough);
       audio.removeEventListener("error", handleError);
-      audio.pause();
-      audio.src = "";
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+      }
     };
   }, []);
 
@@ -71,21 +65,17 @@ const App = () => {
       const playAudio = async () => {
         try {
           audioRef.current.currentTime = 0;
-          const playPromise = audioRef.current.play();
-
-          if (playPromise !== undefined) {
-            await playPromise;
-          }
+          await audioRef.current.play();
         } catch (error) {
           console.error("Audio playback failed:", error);
-          // Single retry with increased delay
+          // One retry with small delay
           setTimeout(async () => {
             try {
               await audioRef.current.play();
             } catch (retryError) {
-              console.error("Final retry failed:", retryError);
+              console.error("Retry failed:", retryError);
             }
-          }, 500); // Increased delay to 500ms
+          }, 200);
         }
       };
 
