@@ -21,6 +21,7 @@ const App = () => {
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "auto";
+    audio.crossOrigin = "anonymous"; // Add this for CORS support
 
     const handleCanPlayThrough = () => {
       setAudioLoaded(true);
@@ -45,8 +46,9 @@ const App = () => {
     audio.addEventListener("canplaythrough", handleCanPlayThrough);
     audio.addEventListener("error", handleError);
 
-    // Set source and load
-    audio.src = "/taylor-swift-22-21.mp3";
+    // Update source to Cloudinary URL
+    audio.src =
+      "https://res.cloudinary.com/dhefudthm/video/upload/v1748729921/taylor-swift-22-21_hyl5jh.mp3";
     audio.load();
 
     return () => {
