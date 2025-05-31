@@ -4,7 +4,7 @@
   "description": "A React application using Tailwind CSS for styling.",
   "main": "src/index.jsx",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "serve": "vite preview"
   },
