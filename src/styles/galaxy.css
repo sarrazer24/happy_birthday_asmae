@@ -57,7 +57,7 @@
   border-radius: 9999px;
   pointer-events: none;
   z-index: 2;
-  animation: shooting 1.2s linear forwards;
+  animation: shooting 6.2s linear forwards;
 }
 
 @keyframes shooting {

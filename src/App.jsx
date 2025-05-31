@@ -50,7 +50,7 @@ const App = () => {
           {[...Array(80)].map((_, i) => {
             const size = Math.random() * 2 + 1;
             const left = Math.random() * 100;
-            const duration = Math.random() * 8 + 6;
+            const duration = Math.random() * 8 + 11; // Changed from 6 to 11 to add 5 seconds
             const delay = Math.random() * 8;
             return (
               <div
