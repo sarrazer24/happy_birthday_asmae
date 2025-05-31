@@ -21,21 +21,11 @@ const App = () => {
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "auto";
-    audio.crossOrigin = "anonymous"; // Add this for CORS support
+    audio.crossOrigin = "anonymous";
 
     const handleCanPlayThrough = () => {
       setAudioLoaded(true);
       audioRef.current = audio;
-      // Try to unlock audio on iOS/Safari
-      if (/iPhone|iPad|iPod|Safari/.test(navigator.userAgent)) {
-        audio
-          .play()
-          .then(() => {
-            audio.pause();
-            audio.currentTime = 0;
-          })
-          .catch(() => {});
-      }
     };
 
     const handleError = (error) => {
@@ -61,16 +51,16 @@ const App = () => {
     };
   }, []);
 
-  // Optimize audio playback
+  // Play audio only after candle is blown
   useEffect(() => {
-    if (blown && audioRef.current && audioLoaded) {
-      const playAudio = async () => {
+    const playBirthdaySong = async () => {
+      if (blown && audioRef.current && audioLoaded) {
         try {
           audioRef.current.currentTime = 0;
           await audioRef.current.play();
         } catch (error) {
           console.error("Audio playback failed:", error);
-          // One retry with small delay
+          // Retry once
           setTimeout(async () => {
             try {
               await audioRef.current.play();
@@ -79,11 +69,11 @@ const App = () => {
             }
           }, 200);
         }
-      };
+      }
+    };
 
-      playAudio();
-    }
-  }, [blown, audioLoaded]);
+    playBirthdaySong();
+  }, [blown]); // Only depend on blown state
 
   useEffect(() => {
     const handleResize = () => {
@@ -93,12 +83,10 @@ const App = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Handle blow detection
   useEffect(() => {
-    const handleBlow = () => setBlown(true);
-
-    // Only blow out the candle on a valid "speechstop" (sustained burst)
     const speechStopHandler = () => {
-      handleBlow();
+      setBlown(true); // This will trigger the audio playback
     };
 
     document.addEventListener("speechstop", speechStopHandler);
