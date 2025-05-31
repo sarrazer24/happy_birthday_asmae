@@ -9,11 +9,64 @@ import Confetti from "react-confetti";
 
 const App = () => {
   const [blown, setBlown] = useState(false);
+  const [audioLoaded, setAudioLoaded] = useState(false);
+  const [audioLoadError, setAudioLoadError] = useState(false);
   const [dimensions, setDimensions] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
   const audioRef = useRef(null);
+
+  // Preload audio when component mounts
+  useEffect(() => {
+    const audio = new Audio("/taylor-swift-22-21.mp3");
+    audio.preload = "auto";
+
+    const handleCanPlayThrough = () => {
+      setAudioLoaded(true);
+      audioRef.current = audio;
+    };
+
+    const handleError = (error) => {
+      console.error("Audio loading error:", error);
+      setAudioLoadError(true);
+    };
+
+    audio.addEventListener("canplaythrough", handleCanPlayThrough);
+    audio.addEventListener("error", handleError);
+    audio.load();
+
+    return () => {
+      audio.removeEventListener("canplaythrough", handleCanPlayThrough);
+      audio.removeEventListener("error", handleError);
+      audio.pause();
+      audio.src = "";
+    };
+  }, []);
+
+  // Modified audio playback effect
+  useEffect(() => {
+    if (blown && audioRef.current && audioLoaded) {
+      const playAudio = async () => {
+        try {
+          audioRef.current.currentTime = 0;
+          await audioRef.current.play();
+        } catch (error) {
+          console.error("Audio playback failed:", error);
+          // Retry once after a short delay
+          setTimeout(async () => {
+            try {
+              await audioRef.current.play();
+            } catch (retryError) {
+              console.error("Retry playback failed:", retryError);
+            }
+          }, 100);
+        }
+      };
+
+      playAudio();
+    }
+  }, [blown, audioLoaded]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -34,14 +87,6 @@ const App = () => {
     document.addEventListener("speechstop", speechStopHandler);
     return () => document.removeEventListener("speechstop", speechStopHandler);
   }, []);
-
-  // Play Taylor Swift "22" (turning 21) clip when blown becomes true
-  useEffect(() => {
-    if (blown && audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play();
-    }
-  }, [blown]);
 
   return (
     <div className="bg-gray-800 text-white text-center min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
@@ -88,15 +133,20 @@ const App = () => {
         className="relative z-10 flex flex-col items-center justify-center min-h-screen text-white text-center"
         style={{ textShadow: "0 2px 8px #000, 0 0px 2px #1a237e" }}
       >
-        {/* Taylor Swift "22" - "it's supposed to be fun turning 21" */}
-        <audio ref={audioRef} src="/taylor-swift-22-21.mp3" />
         <h1 className="text-4xl font-bold my-8">Happy 21st Birthday Asmae!!</h1>
         <Cake blown={blown} />
         <AudioStream />
         <DemoAudioDetectionListeners />
         {!blown && (
           <p className="mt-8 text-lg">
-            Blow into your microphone to blow out the candle!
+            {audioLoaded
+              ? "Blow into your microphone to blow out the candle!"
+              : "Loading... Please wait"}
+          </p>
+        )}
+        {audioLoadError && (
+          <p className="mt-4 text-red-400 text-sm">
+            Audio failed to load. The experience might not be complete.
           </p>
         )}
       </div>
