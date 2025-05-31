@@ -1,0 +1,32 @@
+// filepath: my-react-tailwind-app/my-react-tailwind-app/src/audioDetectionConfig.js
+const SAMPLE_POLLING_MSECS = 50;
+const MAX_INTERSPEECH_SILENCE_MSECS = 600;
+const POST_SPEECH_MSECS = MAX_INTERSPEECH_SILENCE_MSECS;
+const PRERECORDSTART_MSECS = 600;
+const MIN_SIGNAL_DURATION = 900; // 0.9 seconds of sustained sound
+const VOLUME_SIGNAL = 0.02;
+const VOLUME_SILENCE = 0.001;
+const VOLUME_MUTE = 0.0001;
+const MIN_AVERAGE_SIGNAL_VOLUME = 0.06; // slightly higher threshold for breath
+
+const DEFAULT_PARAMETERS_CONFIGURATION = {
+  timeoutMsecs: SAMPLE_POLLING_MSECS,
+  prespeechstartMsecs: PRERECORDSTART_MSECS,
+  speakingMinVolume: VOLUME_SIGNAL,
+  silenceVolume: VOLUME_SILENCE,
+  muteVolume: VOLUME_MUTE,
+  recordingEnabled: true,
+};
+
+export {
+  SAMPLE_POLLING_MSECS,
+  MAX_INTERSPEECH_SILENCE_MSECS,
+  POST_SPEECH_MSECS,
+  PRERECORDSTART_MSECS,
+  MIN_SIGNAL_DURATION,
+  VOLUME_SIGNAL,
+  VOLUME_SILENCE,
+  VOLUME_MUTE,
+  MIN_AVERAGE_SIGNAL_VOLUME,
+  DEFAULT_PARAMETERS_CONFIGURATION,
+};

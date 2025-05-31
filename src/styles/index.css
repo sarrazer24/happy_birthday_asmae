@@ -1,0 +1,6 @@
+/* filepath: my-react-tailwind-app/my-react-tailwind-app/src/styles/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles can be added below this line */
