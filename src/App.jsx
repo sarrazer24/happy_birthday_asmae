@@ -19,24 +19,45 @@ const App = () => {
 
   // Preload audio when component mounts
   useEffect(() => {
-    const audio = new Audio("/taylor-swift-22-21.mp3");
+    const audio = new Audio();
     audio.preload = "auto";
+
+    // Add loading timeout
+    const loadingTimeout = setTimeout(() => {
+      if (!audioLoaded) {
+        setAudioLoadError(true);
+      }
+    }, 10000); // 10 second timeout
 
     const handleCanPlayThrough = () => {
       setAudioLoaded(true);
       audioRef.current = audio;
+      clearTimeout(loadingTimeout);
     };
 
     const handleError = (error) => {
       console.error("Audio loading error:", error);
       setAudioLoadError(true);
+      clearTimeout(loadingTimeout);
     };
 
+    // Add loading state listener
+    const handleLoadStart = () => {
+      setAudioLoaded(false);
+      setAudioLoadError(false);
+    };
+
+    audio.addEventListener("loadstart", handleLoadStart);
     audio.addEventListener("canplaythrough", handleCanPlayThrough);
     audio.addEventListener("error", handleError);
+
+    // Set source after adding listeners
+    audio.src = "/taylor-swift-22-21.mp3";
     audio.load();
 
     return () => {
+      clearTimeout(loadingTimeout);
+      audio.removeEventListener("loadstart", handleLoadStart);
       audio.removeEventListener("canplaythrough", handleCanPlayThrough);
       audio.removeEventListener("error", handleError);
       audio.pause();
@@ -44,23 +65,27 @@ const App = () => {
     };
   }, []);
 
-  // Modified audio playback effect
+  // Optimize audio playback
   useEffect(() => {
     if (blown && audioRef.current && audioLoaded) {
       const playAudio = async () => {
         try {
           audioRef.current.currentTime = 0;
-          await audioRef.current.play();
+          const playPromise = audioRef.current.play();
+
+          if (playPromise !== undefined) {
+            await playPromise;
+          }
         } catch (error) {
           console.error("Audio playback failed:", error);
-          // Retry once after a short delay
+          // Single retry with increased delay
           setTimeout(async () => {
             try {
               await audioRef.current.play();
             } catch (retryError) {
-              console.error("Retry playback failed:", retryError);
+              console.error("Final retry failed:", retryError);
             }
-          }, 100);
+          }, 500); // Increased delay to 500ms
         }
       };
 
