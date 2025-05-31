@@ -4,9 +4,9 @@
   "description": "A React application using Tailwind CSS for styling.",
   "main": "src/index.jsx",
   "scripts": {
-    "dev": "npx vite --host",
-    "build": "npx vite build",
-    "serve": "npx vite preview"
+    "dev": "npm exec vite -- --host",
+    "build": "npm exec vite -- build",
+    "serve": "npm exec vite -- preview"
   },
   "keywords": [
     "react",
