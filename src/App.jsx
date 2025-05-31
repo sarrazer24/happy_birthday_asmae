@@ -6,6 +6,7 @@ import "./styles/galaxy.css";
 import AudioStream from "./audioStream";
 import DemoAudioDetectionListeners from "./demoAudioDetectionListeners";
 import Confetti from "react-confetti";
+import GiftBox from "./components/GiftBox";
 
 const App = () => {
   const [blown, setBlown] = useState(false);
@@ -15,6 +16,7 @@ const App = () => {
     width: window.innerWidth,
     height: window.innerHeight,
   });
+  const [giftOpened, setGiftOpened] = useState(false);
   const audioRef = useRef(null);
 
   // Preload audio when component mounts
@@ -51,10 +53,27 @@ const App = () => {
     };
   }, []);
 
+  const handleGiftClick = async () => {
+    if (!giftOpened) {
+      setGiftOpened(true);
+      // Pre-load audio on gift open
+      if (audioRef.current) {
+        try {
+          // Try to unlock audio on iOS/Safari
+          await audioRef.current.play();
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        } catch (error) {
+          console.error("Audio unlock failed:", error);
+        }
+      }
+    }
+  };
+
   // Play audio only after candle is blown
   useEffect(() => {
     const playBirthdaySong = async () => {
-      if (blown && audioRef.current && audioLoaded) {
+      if (blown && audioRef.current && audioLoaded && giftOpened) {
         try {
           audioRef.current.currentTime = 0;
           await audioRef.current.play();
@@ -73,7 +92,7 @@ const App = () => {
     };
 
     playBirthdaySong();
-  }, [blown]); // Only depend on blown state
+  }, [blown, audioLoaded, giftOpened]); // Only depend on blown state
 
   useEffect(() => {
     const handleResize = () => {
@@ -139,16 +158,24 @@ const App = () => {
         style={{ textShadow: "0 2px 8px #000, 0 0px 2px #1a237e" }}
       >
         <h1 className="text-4xl font-bold my-8">Happy 21st Birthday Asmae!!</h1>
-        <Cake blown={blown} />
-        <AudioStream />
-        <DemoAudioDetectionListeners />
-        {!blown && (
-          <p className="mt-8 text-lg">
-            {audioLoaded
-              ? "Blow into your microphone to blow out the candle!"
-              : "Loading... Please wait"}
-          </p>
+
+        {!giftOpened ? (
+          <GiftBox onClick={handleGiftClick} isOpen={giftOpened} />
+        ) : (
+          <>
+            <Cake blown={blown} />
+            <AudioStream />
+            <DemoAudioDetectionListeners />
+            {!blown && (
+              <p className="mt-8 text-lg animate-pulse">
+                {audioLoaded
+                  ? "🎂 Blow into your microphone to blow out the candle! 🎂"
+                  : "Loading... Please wait"}
+              </p>
+            )}
+          </>
         )}
+
         {audioLoadError && (
           <p className="mt-4 text-red-400 text-sm">
             Audio failed to load. The experience might not be complete.
